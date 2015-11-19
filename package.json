@@ -1,0 +1,25 @@
+{
+  "name": "didactic-quack",
+  "version": "0.0.1",
+  "description": "Instantly log hours through a message.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frenchbread/didactic-quack.git"
+  },
+  "keywords": [
+    "log",
+    "hours",
+    "telergam",
+    "api"
+  ],
+  "author": "Damir Mustafin",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/frenchbread/didactic-quack/issues"
+  },
+  "homepage": "https://github.com/frenchbread/didactic-quack#readme"
+}

@@ -23,9 +23,9 @@ Wrapper around [Telegram](https://telegram.org/) messenger API that stores hours
     $ node app.js
     ```
 
-### Usage
+## Usage
 
-## Commands
+### Commands
 
 Text this commands directly to you newly created bot.
 
@@ -37,7 +37,7 @@ Text this commands directly to you newly created bot.
 `<hours>` - `Double`
 `<details>` - `String`
 
-## Accessing data
+### Accessing data
 
 ```
 $ mongo test

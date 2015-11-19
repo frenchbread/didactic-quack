@@ -34,7 +34,9 @@ Text this commands directly to you newly created bot.
 * `/log <project> | <hours> | <details>` - logs stuff to MongoDB collection. 
 
 `<project>` - `String`
+
 `<hours>` - `Double`
+
 `<details>` - `String`
 
 ### Accessing data

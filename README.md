@@ -8,7 +8,7 @@ Wrapper around [Telegram](https://telegram.org/) messenger API that stores hours
 
 2. Text to [@BotFather](https://telegram.me/botfather) and follow instructions to create a new bot & get `api_token`.
 
-    See Official docs about [Bot API](https://core.telegram.org/bots).
+    See Official docs for [Bot API](https://core.telegram.org/bots).
 
 3. Clone the repo
     ```
@@ -47,6 +47,6 @@ $ db.hours.find()
 ```
 
 
-### License
+## License
 
 GNU AGPL

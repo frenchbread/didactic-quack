@@ -1,5 +1,4 @@
 # didactic-quack
-:pencil: Instantly logging hours though a message.
 
 Wrapper around [Telegram](https://telegram.org/) messenger API that stores hours logs in MongoDB.
 

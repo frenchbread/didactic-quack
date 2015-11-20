@@ -1,5 +1,5 @@
 var r = require('request');
-var config = require('../config');
+var config = require('../../config');
 
 var token = config.get("api_token");
 var url = config.get('host')+token;

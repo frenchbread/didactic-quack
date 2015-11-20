@@ -1,4 +1,4 @@
-var mongoose = require('../config/mongoose');
+var mongoose = require('../../config/mongoose');
 var Schema = mongoose.Schema;
 
 var hours = new Schema({

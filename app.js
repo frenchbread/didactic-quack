@@ -1,10 +1,9 @@
-var getUpdates = require('./lib/core');
+var config = require('./config');
+var Bot = require('./bot');
 
-var CronJob = require('cron').CronJob;
+var b = new Bot({
+    "host": config.get("host"),
+    "token": config.get("api_token")
+});
 
-new CronJob('*/5 * * * * *', function() {
-
-    getUpdates();
-
-}, null, true, 'America/Los_Angeles');
-
+b.getUpdates();

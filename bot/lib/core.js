@@ -1,14 +1,12 @@
-var config = require('../config');
 var r = require('request');
 var async = require('async');
+
 var Offset = require('../models/offset');
 var parseMessage = require('./parseMessage');
 
-var token = config.get("api_token");
-var url = config.get('host')+token;
+module.exports = function(host, token){
 
-module.exports = function(){
-
+    var url = host + token;
     var nUrl = url + "/getUpdates";
 
     async.waterfall([

@@ -2,7 +2,7 @@
 
 Wrapper around [Telegram](https://telegram.org/) messenger API that stores hours logs in MongoDB.
 
-### Installation
+### Installation & setup
 
 1. Download [Telegram app](https://telegram.org/apps) and set it up.
 
@@ -10,21 +10,40 @@ Wrapper around [Telegram](https://telegram.org/) messenger API that stores hours
 
     See Official docs for [Bot API](https://core.telegram.org/bots).
 
-3. Clone the repo
+3. Install npm package.
     ```
-    $ git clone https://github.com/frenchbread/didactic-quack.git
+    $ npm i didactic-quack --save
     ```
 
-4. Rename `example.conf.json` to `conf.json`, provide `uriDev` for mongodb & `api_token`.  
-
-5. Run
-    ```
-    $ node app.js
-    ```
+4. Rename `example.conf.json` to `conf.json`, provide `uriDev` for mongodb.
+  
 
 ## Usage
 
-### Commands
+#### In `app.js`
+
+```javascript
+var DQ = require('didactic-quack');
+       
+var dq = new DQ({
+    "parent": "your_telegram_id",
+    "host": "https://api.telegram.org/bot",
+    "token": "your_telegram_bot_api_token"
+});
+   
+dq.getUpdates();
+
+```
+
+**Change values of `parent` and `token` to `you_telegram_id` (can be fetched using Telergam API) and `your_telegram_bot_api_token`.**
+
+#### Run:
+
+ ```
+$ node app.js
+```
+
+#### Commands
 
 Text this commands directly to you newly created bot.
 
@@ -38,7 +57,7 @@ Text this commands directly to you newly created bot.
 
 `<details>` - `String`
 
-### Accessing data
+#### Accessing data
 
 ```
 $ mongo test

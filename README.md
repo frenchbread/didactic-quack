@@ -35,7 +35,7 @@ dq.getUpdates();
 
 ```
 
-#### Run:
+#### Run
 
  ```
 $ node app.js

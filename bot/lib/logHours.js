@@ -38,7 +38,7 @@ module.exports = function (text) {
 
                 }else return "<details> missing.";
 
-            }else return "<hours> must be <int> e.g 1.5"
+            }else return "<hours> must be <double> e.g 1.5"
 
         }else return "<hours> missing.";
 
@@ -47,5 +47,5 @@ module.exports = function (text) {
 
 function isFloat(value) {
     var x = parseFloat(value);
-    return !isNaN(value);
+    return !isNaN(x);
 }

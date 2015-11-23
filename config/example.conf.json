@@ -11,7 +11,7 @@
       }
     }
   },
+  "parent_id": "your_telegram_id",
   "api_token": "your_telegram_bot_api_token",
-  "host": "https://api.telegram.org/bot",
-  "last_message_id": null
+  "host": "https://api.telegram.org/bot"
 }

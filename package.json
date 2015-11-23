@@ -1,6 +1,6 @@
 {
   "name": "didactic-quack",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Instantly log hours through a message.",
   "main": "app.js",
   "dependencies": {

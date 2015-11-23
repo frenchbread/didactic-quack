@@ -1,10 +1,10 @@
 var config = require('./config');
-var Bot = require('./');
+var DQ = require('./');
 
-var b = new Bot({
+var dq = new DQ({
     "parent": config.get("parent_id"),
     "host": config.get("host"),
     "token": config.get("api_token")
 });
 
-b.getUpdates();
+dq.getUpdates();

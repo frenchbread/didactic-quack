@@ -1,6 +1,6 @@
 {
   "name": "didactic-quack",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Bot that works through Telegram Bot API.",
   "main": "index.js",
   "dependencies": {

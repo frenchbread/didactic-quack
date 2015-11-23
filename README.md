@@ -35,8 +35,6 @@ dq.getUpdates();
 
 ```
 
-Change values of `parent` and `token` to `you_telegram_id` (can be fetched using Telergam API) and `your_telegram_bot_api_token`.
-
 #### Run:
 
  ```

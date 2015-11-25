@@ -61,6 +61,8 @@ Text this commands directly to you newly created bot.
 
 ## Changelog:
 
+`v0.2.2` - Fixed path to `offset.txt`.
+
 `v0.2.0` - Removed `Cron` & `Mongoose`. Code cleanup. Changed project structure.
 
 ## License

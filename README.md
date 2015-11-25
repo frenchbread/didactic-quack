@@ -1,6 +1,6 @@
 # didactic-quack
 
-Wrapper around [Telegram](https://telegram.org/) messenger API that stores hours logs in MongoDB.
+Wrapper around [Telegram](https://telegram.org/) messenger API.
 
 ### Installation & setup
 
@@ -15,12 +15,9 @@ Wrapper around [Telegram](https://telegram.org/) messenger API that stores hours
     $ npm i didactic-quack --save
     ```
 
-4. Rename `example.conf.json` to `conf.json`, provide `uriDev` for mongodb.
-  
-
 ## Usage
 
-#### In `app.js`
+#### In `app.js`:
 
 ```javascript
 var DQ = require('didactic-quack');
@@ -41,13 +38,13 @@ dq.getUpdates();
 $ node app.js
 ```
 
-#### Commands
+#### Commands:
 
 Text this commands directly to you newly created bot.
 
 * `/time` - returns current time.
 
-* `/log <project> | <hours> | <details>` - logs stuff to MongoDB collection. 
+* `/log <project> | <hours> | <details>` - returns logged data.
 
 `<project>` - `String`
 
@@ -55,14 +52,9 @@ Text this commands directly to you newly created bot.
 
 `<details>` - `String`
 
-#### Accessing data
+## Changelog:
 
-```
-$ mongo test
-
-$ db.hours.find()
-```
-
+`v0.2.0` - Removed `Cron` & `Mongoose`. Code cleanup. Changed project structure.
 
 ## License
 

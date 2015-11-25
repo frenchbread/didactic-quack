@@ -1,7 +1,7 @@
 var r = require('request');
 var async = require('async');
 var fs = require('fs');
-var parseMessage = require('./bot/lib/parseMessage');
+var parseMessage = require('./lib/parseMessage');
 
 var DQ = function (params) {
 

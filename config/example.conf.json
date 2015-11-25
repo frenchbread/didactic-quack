@@ -1,16 +1,4 @@
 {
-  "ENV"   : "development",
-  "mongoose": {
-    "uriDev"  : "mongodb://127.0.0.1/test",
-    "uriProd" : "",
-    "options": {
-      "server": {
-        "socketOptions": {
-          "keepAlive" : 1
-        }
-      }
-    }
-  },
   "parent_id": "your_telegram_id",
   "api_token": "your_telegram_bot_api_token",
   "host": "https://api.telegram.org/bot"

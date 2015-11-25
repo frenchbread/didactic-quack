@@ -20,6 +20,7 @@ Wrapper around [Telegram](https://telegram.org/) messenger API.
 #### In `app.js`:
 
 ```javascript
+var CronJob = require('cron').CronJob; // node-cron package is not included. Run "npm i cron" to install it.
 var DQ = require('didactic-quack');
        
 var dq = new DQ({
@@ -28,7 +29,11 @@ var dq = new DQ({
     "token": "your_telegram_bot_api_token"
 });
    
-dq.getUpdates();
+new CronJob('*/5 * * * * *', function() {
+
+    dq.getUpdates();
+
+}, null, true, 'America/Los_Angeles');
 
 ```
 

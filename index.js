@@ -1,4 +1,3 @@
-var CronJob = require('cron').CronJob;
 var r = require('request');
 var async = require('async');
 
@@ -16,11 +15,7 @@ Bot.prototype.getUpdates = function () {
 
     var self = this;
 
-    new CronJob('*/5 * * * * *', function() {
-
-        check();
-
-    }, null, true, 'America/Los_Angeles');
+    check();
 
     // getUpdates function
     function check(){

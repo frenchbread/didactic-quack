@@ -67,4 +67,4 @@ Text this commands directly to you newly created bot.
 
 ## License
 
-GNU AGPL
+API-dashboard is freely distributable under the terms of the [MIT license](https://github.com/frenchbread/didactic-quack/blob/master/LICENSE.md).

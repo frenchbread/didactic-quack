@@ -14,7 +14,7 @@ DQ.prototype.getUpdates = function () {
 
     var self = this;
 
-    var fileWithOffet = 'offset.txt';
+    var fileWithOffet = 'config/offset.txt';
 
     var nUrl = self.host + self.token + "/getUpdates";
 

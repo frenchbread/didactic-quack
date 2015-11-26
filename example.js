@@ -1,10 +1,9 @@
-var config = require('./config');
 var DQ = require('./');
 
 var dq = new DQ({
-    "parent": config.get("parent_id"),
-    "host": config.get("host"),
-    "token": config.get("api_token")
+    "parent": "your_telegram_id",
+    "host": "https://api.telegram.org/bot",
+    "token": "your_api_token"
 });
 
 dq.getUpdates();

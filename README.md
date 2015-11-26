@@ -39,7 +39,7 @@ new CronJob('*/5 * * * * *', function() {
 
 ```
 
-#### Run
+#### Run:
 
  ```
 $ node app.js

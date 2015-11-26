@@ -1,6 +1,7 @@
 var r = require('request');
 var async = require('async');
 var fs = require('fs');
+var path = require('path');
 var parseMessage = require('./lib/parseMessage');
 
 var DQ = function (params) {
@@ -14,7 +15,7 @@ DQ.prototype.getUpdates = function () {
 
     var self = this;
 
-    var fileWithOffet = 'config/offset.txt';
+    var fileWithOffset = path.join(__dirname, 'config/offset.txt');
 
     var nUrl = self.host + self.token + "/getUpdates";
 
@@ -22,7 +23,7 @@ DQ.prototype.getUpdates = function () {
 
         function (next) {
 
-            fs.readFile(fileWithOffet, 'utf8', function (err, data) {
+            fs.readFile(fileWithOffset, 'utf8', function (err, data) {
 
                 if (err) throw err;
 
@@ -30,7 +31,7 @@ DQ.prototype.getUpdates = function () {
 
                 if (!data || data != parseInt(data, 10)) {
 
-                    fs.writeFile(fileWithOffet, offset, function (err) {
+                    fs.writeFile(fileWithOffset, offset, function (err) {
                         if (err) throw err;
                         console.log('Default offset is set.');
                     });
@@ -88,7 +89,7 @@ DQ.prototype.getUpdates = function () {
 
         var offset = getHighestOffset(messages) + 1;
 
-        fs.writeFile(fileWithOffet, offset, function (err) {
+        fs.writeFile(fileWithOffset, offset, function (err) {
             if (err) throw err;
             console.log('Offset updated.');
         });

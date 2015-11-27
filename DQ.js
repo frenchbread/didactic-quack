@@ -1,99 +1,61 @@
 var r = require('request');
-var async = require('async');
-var fs = require('fs');
-var path = require('path');
 var parseMessage = require('./lib/parseMessage');
 
 var DQ = function (params) {
 
-    this.parent = params.parent;
-    this.host = params.host;
     this.token = params.token;
+    this.host = "https://api.telegram.org/bot";
+
+    if (typeof params.parent === 'undefined')
+        this.parent = null;
+    else
+        this.parent = params.parent;
+
+    this.offset = 0;
+
 };
 
 DQ.prototype.getUpdates = function () {
 
     var self = this;
 
-    var fileWithOffset = path.join(__dirname, 'config/offset.txt');
-
     var nUrl = self.host + self.token + "/getUpdates";
 
-    async.waterfall([
+    r(nUrl + "?offset="+self.offset, function(err, response, body){
 
-        function (next) {
+        if (err) throw err;
 
-            fs.readFile(fileWithOffset, 'utf8', function (err, data) {
+        var res = JSON.parse(body);
 
-                if (err) throw err;
+        if (res.ok) {
 
-                var offset = 0;
+            var messages = res.result;
 
-                if (!data || data != parseInt(data, 10)) {
+            if (messages.length>0) {
 
-                    fs.writeFile(fileWithOffset, offset, function (err) {
-                        if (err) throw err;
-                        console.log('Default offset is set.');
-                    });
+                // Updating offset
+                self.offset = getHighestOffset(messages) + 1;
 
-                }else offset = data;
+                messages.forEach(function(e){
 
-                next(null, offset);
-            });
-        },
-        function (offset, next) {
+                    var to = (this.parent != null) ? self.parent : e.message.from.id;
 
-            r(nUrl + "?offset="+offset, function(err, response, body){
+                    var text = e.message.text;
 
-                if (err) throw err;
+                    // parse messages
+                    var responseMessage = parseMessage(text);
 
-                var res = JSON.parse(body);
+                    // Sends message.
+                    self.sendMessage(to, responseMessage);
+                });
 
-                if (res.ok) {
-
-                    var messages = res.result;
-
-                    if (messages.length>0) {
-
-                        updateOffset(messages);
-
-                        next(null, messages);
-                    }else{
-                        console.log("No new messages..");
-                    }
-                }
-            });
-        },
-        function (messages, next) {
-
-            messages.forEach(function(e){
-
-                // Sends message to the client (uncomment if bot goes public)
-                //var to = e.message.from.id;
-
-                // Sends message to bot "owner" (parent id)
-                var to = self.parent;
-                var text = e.message.text;
-
-                // parse messages
-                var responseMessage = parseMessage(text);
-
-                // Sends message.
-                self.sendMessage(to, responseMessage);
-            });
+            }else{
+                console.log("No new messages..");
+            }
         }
-    ]);
+    });
 
     // Helper functions
-    function updateOffset(messages){
-
-        var offset = getHighestOffset(messages) + 1;
-
-        fs.writeFile(fileWithOffset, offset, function (err) {
-            if (err) throw err;
-            console.log('Offset updated.');
-        });
-    }
 
     function getHighestOffset(obj){
 

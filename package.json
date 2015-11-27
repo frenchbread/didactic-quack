@@ -7,7 +7,8 @@
     "async": "^1.4.2",
     "moment": "^2.10.6",
     "request": "^2.62.0",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "urijs": "^1.17.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

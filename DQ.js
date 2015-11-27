@@ -1,7 +1,6 @@
 var request = require('request');
 var _ = require('underscore');
 var URL = require('url');
-var parseMessage = require('./lib/parseMessage');
 
 var DQ = function (params) {
 
@@ -23,7 +22,7 @@ var DQ = function (params) {
 
 };
 
-DQ.prototype.getUpdates = function () {
+DQ.prototype.getUpdates = function (callback) {
 
     var self = this;
 
@@ -42,23 +41,17 @@ DQ.prototype.getUpdates = function () {
                 // Updating offset
                 self._offset = getHighestOffset(messages) + 1;
 
-                console.log(self._offset);
-
                 messages.forEach(function(e){
 
                     var to = (self._parent != null) ? self._parent : e.message.from.id;
 
                     var text = e.message.text;
 
-                    // parse messages
-                    var responseMessage = parseMessage(text);
-
-                    // Sends message
-                    self.sendMessage(to, responseMessage);
+                    return callback(text);
                 });
 
             }else{
-                console.log("No new messages..");
+                return callback(null);
             }
         }
     });

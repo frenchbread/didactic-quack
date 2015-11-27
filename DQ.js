@@ -1,6 +1,9 @@
 var request = require('request');
 var _ = require('underscore');
 var URL = require('url');
+var S = require('string');
+
+var parseMsg = require('./lib/parseMessage');
 
 var DQ = function (params) {
 
@@ -19,19 +22,6 @@ var DQ = function (params) {
     this.getUpdatesUrl = this._host + this._token + "/getUpdates";
 
     this.sendMessageUrl = this._host + this._token + "/sendMessage";
-
-};
-
-DQ.prototype.getNewMessages = function (callback) {
-
-    var self = this;
-
-    this._reqGet(function (err, messages) {
-
-        if (err) callback(err, null);
-
-        callback(null, messages);
-    });
 
 };
 
@@ -58,12 +48,50 @@ DQ.prototype._reqGet = function (callback) {
 
                 callback(null, messages);
 
-            } else return callback("No new messages..", null);
+            } else {
 
-        } else return callback("Something went wrong..", null);
+                console.log("No new messages..");
+
+                return callback(undefined, []);
+            }
+
+        } else return callback(new Error("Response looks wrong.."), undefined);
 
     });
 };
+
+DQ.prototype.getUpdates = function (callback) {
+
+    var self = this;
+
+    this._reqGet(function (err, messages) {
+
+        if (err) callback(err, undefined);
+
+        self._eachMessage(messages, function (err, response) {
+
+            if (err) callback(err, undefined);
+
+            callback(undefined, response);
+        });
+    });
+};
+
+DQ.prototype._eachMessage = function (messages, callback) {
+
+    var self = this;
+
+    _.each(messages, function (msg) {
+
+        var to = msg.message.from.id; // (self._parent != null) ? self._parent : e.message.from.id;
+        var text = msg.message.text;
+
+        var parsed = parseMsg(text);
+
+        callback(undefined, parsed);
+    });
+};
+
 
 DQ.prototype._updateOffset = function (messages) {
 

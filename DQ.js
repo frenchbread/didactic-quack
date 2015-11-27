@@ -1,17 +1,25 @@
-var r = require('request');
+var request = require('request');
+var _ = require('underscore');
+var URL = require('url');
 var parseMessage = require('./lib/parseMessage');
 
 var DQ = function (params) {
 
-    this.token = params.token;
-    this.host = "https://api.telegram.org/bot";
+    this._token = params.token;
 
-    if (typeof params.parent === 'undefined')
-        this.parent = null;
-    else
-        this.parent = params.parent;
+    this._host = URL.format({
+        protocol: "https",
+        host: "api.telegram.org",
+        pathname: "bot"
+    });
 
-    this.offset = 0;
+    this._parent = (typeof params.parent === 'undefined') ? null : params.parent;
+
+    this._offset = 0;
+
+    this.getUpdatesUrl = this._host + this._token + "/getUpdates";
+
+    this.sendMessageUrl = this._host + this._token + "/sendMessage";
 
 };
 
@@ -19,9 +27,7 @@ DQ.prototype.getUpdates = function () {
 
     var self = this;
 
-    var nUrl = self.host + self.token + "/getUpdates";
-
-    r(nUrl + "?offset="+self.offset, function(err, response, body){
+    request(self.getUpdatesUrl + "?offset=" + self._offset, function(err, response, body){
 
         if (err) throw err;
 
@@ -34,18 +40,20 @@ DQ.prototype.getUpdates = function () {
             if (messages.length>0) {
 
                 // Updating offset
-                self.offset = getHighestOffset(messages) + 1;
+                self._offset = getHighestOffset(messages) + 1;
+
+                console.log(self._offset);
 
                 messages.forEach(function(e){
 
-                    var to = (this.parent != null) ? self.parent : e.message.from.id;
+                    var to = (self._parent != null) ? self._parent : e.message.from.id;
 
                     var text = e.message.text;
 
                     // parse messages
                     var responseMessage = parseMessage(text);
 
-                    // Sends message.
+                    // Sends message
                     self.sendMessage(to, responseMessage);
                 });
 
@@ -56,12 +64,11 @@ DQ.prototype.getUpdates = function () {
     });
 
     // Helper functions
-
-    function getHighestOffset(obj){
+    function getHighestOffset(messages){
 
         var arr = [];
 
-        obj.forEach(function(e){
+        messages.forEach(function(e){
 
             arr.push(e.update_id);
         });
@@ -72,12 +79,9 @@ DQ.prototype.getUpdates = function () {
 
 DQ.prototype.sendMessage = function (to, text) {
 
-    var toPrefix = "?chat_id=" + to;
-    var messagePrefix = "&text=" + text;
+    var prefix = "?chat_id=" + to + "&text=" + text;
 
-    var nUrl = this.host + this.token + "/sendMessage" + toPrefix + messagePrefix;
-
-    r(nUrl, function(err, response, body){
+    request(this.sendMessageUrl + prefix, function(err, response, body){
         if (err) throw err;
     });
 };

@@ -1,11 +1,10 @@
 var request = require('request');
 var _ = require('underscore');
 var URL = require('url');
-var S = require('string');
+var string = require('string');
 var logger = require('intel');
 
 var modulesList = require('./lib/modulesList');
-
 var modules = require('./lib/modules');
 
 
@@ -138,7 +137,7 @@ DQ.prototype._hasCommand = function (text) {
 
         if (modules.hasOwnProperty(key)) {
 
-            if (S(text).contains(modules[key]))
+            if (string(text).contains(modules[key]))
                 return true;
         }
     }
@@ -155,7 +154,7 @@ DQ.prototype._getCommandName = function (text) {
 
         if (modules.hasOwnProperty(key)) {
 
-            if (S(text).contains(modules[key])){
+            if (string(text).contains(modules[key])){
 
                 return key;
             }

@@ -38,6 +38,7 @@ var DQ = function (params) {
 
 
 // Get request
+// returns callback with NEW MESSAGES list
 DQ.prototype._reqGet = function (callback) {
 
     var self = this;
@@ -72,6 +73,7 @@ DQ.prototype._reqGet = function (callback) {
     });
 };
 
+// Send message method
 DQ.prototype.sendMessage = function (to, text) {
 
     var prefix = "?chat_id=" + to + "&text=" + text;
@@ -83,7 +85,8 @@ DQ.prototype.sendMessage = function (to, text) {
     });
 };
 
-// Main method returns deployed command
+// Main method
+// get new messages, iterates through each message
 DQ.prototype.getUpdates = function () {
 
     var self = this;

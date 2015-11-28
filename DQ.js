@@ -2,6 +2,7 @@ var request = require('request');
 var _ = require('underscore');
 var URL = require('url');
 var S = require('string');
+var logger = require('intel');
 
 var modulesList = require('./lib/modulesList');
 
@@ -59,7 +60,7 @@ DQ.prototype._reqGet = function (callback) {
 
             } else {
 
-                console.log("No new messages..");
+                logger.info("No new messages..");
 
                 return callback(undefined, []);
             }
@@ -74,9 +75,9 @@ DQ.prototype.sendMessage = function (to, text) {
     var prefix = "?chat_id=" + to + "&text=" + text;
 
     request(this.sendMessageUrl + prefix, function(err, response, body){
-        if (err) console.log(err);
+        if (err) logger.error(err);
 
-        console.log("Message send");
+        logger.info("Message send");
     });
 };
 
@@ -91,7 +92,7 @@ DQ.prototype.getUpdates = function () {
 
         self._eachMessage(messages, function (err, response) {
 
-            if (err) console.log(err);
+            if (err) logger.error(err);
 
             self.sendMessage(self._recipient, response);
         });
@@ -156,7 +157,7 @@ DQ.prototype._getCommandName = function (text) {
 DQ.prototype._updateOffset = function (messages) {
 
     this._offset = this._getHighestOffset(messages) + 1;
-    console.log("Updating offset..");
+    logger.info("Updating offset..");
 };
 
 DQ.prototype._getHighestOffset = function (messages) {

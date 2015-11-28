@@ -5,6 +5,7 @@
   "main": "DQ.js",
   "dependencies": {
     "async": "^1.5.0",
+    "intel": "^1.0.2",
     "moment": "^2.10.6",
     "request": "^2.62.0",
     "string": "^3.3.1",

@@ -3,8 +3,12 @@ var _ = require('underscore');
 var URL = require('url');
 var S = require('string');
 
-var parseMsg = require('./lib/parseMessage');
+var modulesList = require('./lib/modulesList');
 
+var modules = require('./lib/modules');
+
+
+// Class constructor
 var DQ = function (params) {
 
     this._token = params.token;
@@ -23,9 +27,12 @@ var DQ = function (params) {
 
     this.sendMessageUrl = this._host + this._token + "/sendMessage";
 
+    this._moduleList = modulesList;
+
 };
 
 
+// Get request
 DQ.prototype._reqGet = function (callback) {
 
     var self = this;
@@ -60,6 +67,7 @@ DQ.prototype._reqGet = function (callback) {
     });
 };
 
+// Main method returns deployed command
 DQ.prototype.getUpdates = function (callback) {
 
     var self = this;
@@ -86,12 +94,51 @@ DQ.prototype._eachMessage = function (messages, callback) {
         var to = msg.message.from.id; // (self._parent != null) ? self._parent : e.message.from.id;
         var text = msg.message.text;
 
-        var parsed = parseMsg(text);
 
-        callback(undefined, parsed);
+        if (self._hasCommand(text)){
+
+            var moduleName = self._getCommandName(text);
+
+            callback(undefined, modules[moduleName](text));
+        } else {
+
+            // Call default module
+            callback(undefined, modules.default());
+        }
     });
 };
 
+DQ.prototype._hasCommand = function (text) {
+
+    var modules = this._moduleList;
+
+    for (var key in modules) {
+
+        if (modules.hasOwnProperty(key)) {
+
+            if (S(text).contains(modules[key]))
+                return true;
+        }
+    }
+
+    return false;
+};
+
+DQ.prototype._getCommandName = function (text) {
+
+    var modules = this._moduleList;
+
+    for (var key in modules) {
+
+        if (modules.hasOwnProperty(key)) {
+
+            if (S(text).contains(modules[key])){
+
+                return key;
+            }
+        }
+    }
+};
 
 DQ.prototype._updateOffset = function (messages) {
 
@@ -111,6 +158,7 @@ DQ.prototype._getHighestOffset = function (messages) {
 
     return Math.max.apply(null, arr);
 };
+
 
 
 //// Updating offset

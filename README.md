@@ -48,11 +48,16 @@ $ node app.js
 
 #### Commands:
 
+Command implementations are stored in `Modules`. All modules should be registered in `modulesList.js` for bot to
+recognise them and referenced in `modules/index.js`.
+ 
+###### Default commands
+
 Text this commands directly to you newly created bot.
 
 * `/time` - returns current time.
 
-* `/log <project> | <hours> | <details>` - returns logged data.
+* `/log <project> | <hours> | <details>` - returns logged data. (Does not do more. Only parses data and returns in user-friendly way).
 
 `<project>` - `String`
 
@@ -62,9 +67,15 @@ Text this commands directly to you newly created bot.
 
 ## Changelog:
 
+`v0.3.0` - Refactored almost all. Added modules. Offset now stored in memory.
+
 `v0.2.2` - Fixed path to `offset.txt`.
 
 `v0.2.0` - Removed `Cron` & `Mongoose`. Code cleanup. Changed project structure.
+
+## ToDo:
+
+* Set up a web hook for a bot to receive new messages automatically. (Get rid of "manual" requests to the server).
 
 ## License
 

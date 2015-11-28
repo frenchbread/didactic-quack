@@ -2,6 +2,8 @@
 
 Wrapper around [Telegram](https://telegram.org/) messenger API.
 
+![NPM Stats](https://nodei.co/npm/didactic-quack.png?downloads=true&downloadRank=true&stars=true)
+
 ### Installation & setup
 
 1. Download [Telegram app](https://telegram.org/apps) and set it up.

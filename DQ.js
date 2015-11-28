@@ -25,9 +25,9 @@ var DQ = function (params) {
 
     this._offset = 0;
 
-    this.getUpdatesUrl = this._host + this._token + "/getUpdates";
+    this._getUpdatesUrl = this._host + this._token + "/getUpdates";
 
-    this.sendMessageUrl = this._host + this._token + "/sendMessage";
+    this._sendMessageUrl = this._host + this._token + "/sendMessage";
 
     this._moduleList = (typeof params.moduleList === 'undefined') ? modulesList : params.moduleList;
 
@@ -42,7 +42,7 @@ DQ.prototype._reqGet = function (callback) {
 
     var self = this;
 
-    var url = this.getUpdatesUrl + "?offset=" + this._offset;
+    var url = this._getUpdatesUrl + "?offset=" + this._offset;
 
     request(url, function (err, res, body) {
 
@@ -77,7 +77,7 @@ DQ.prototype.sendMessage = function (to, text) {
 
     var prefix = "?chat_id=" + to + "&text=" + text;
 
-    request(this.sendMessageUrl + prefix, function(err, response, body){
+    request(this._sendMessageUrl + prefix, function(err, response, body){
         if (err) logger.error(err);
 
         logger.info("Message send");
@@ -102,7 +102,6 @@ DQ.prototype.getUpdates = function () {
         });
     });
 };
-
 
 // Iterates though each message & call a callback with deployed module data
 DQ.prototype._eachMessage = function (messages, callback) {

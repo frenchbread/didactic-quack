@@ -9,8 +9,7 @@
     "moment": "^2.10.6",
     "request": "^2.62.0",
     "string": "^3.3.1",
-    "underscore": "^1.8.3",
-    "urijs": "^1.17.0"
+    "underscore": "^1.8.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

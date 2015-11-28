@@ -21,6 +21,8 @@ var DQ = function (params) {
 
     this._parent = (typeof params.parent === 'undefined') ? null : params.parent;
 
+    this._recipient;
+
     this._offset = 0;
 
     this.getUpdatesUrl = this._host + this._token + "/getUpdates";
@@ -67,8 +69,19 @@ DQ.prototype._reqGet = function (callback) {
     });
 };
 
+DQ.prototype.sendMessage = function (to, text) {
+
+    var prefix = "?chat_id=" + to + "&text=" + text;
+
+    request(this.sendMessageUrl + prefix, function(err, response, body){
+        if (err) console.log(err);
+
+        console.log("Message send");
+    });
+};
+
 // Main method returns deployed command
-DQ.prototype.getUpdates = function (callback) {
+DQ.prototype.getUpdates = function () {
 
     var self = this;
 
@@ -78,9 +91,9 @@ DQ.prototype.getUpdates = function (callback) {
 
         self._eachMessage(messages, function (err, response) {
 
-            if (err) callback(err, undefined);
+            if (err) console.log(err);
 
-            callback(undefined, response);
+            self.sendMessage(self._recipient, response);
         });
     });
 };
@@ -91,7 +104,7 @@ DQ.prototype._eachMessage = function (messages, callback) {
 
     _.each(messages, function (msg) {
 
-        var to = msg.message.from.id; // (self._parent != null) ? self._parent : e.message.from.id;
+        self._recipient = msg.message.from.id; // (self._parent != null) ? self._parent : e.message.from.id;
         var text = msg.message.text;
 
 
@@ -221,13 +234,6 @@ DQ.prototype._getHighestOffset = function (messages) {
 //    }
 //};
 //
-//DQ.prototype.sendMessage = function (to, text) {
-//
-//    var prefix = "?chat_id=" + to + "&text=" + text;
-//
-//    request(this.sendMessageUrl + prefix, function(err, response, body){
-//        if (err) throw err;
-//    });
-//};
+
 
 module.exports = DQ;

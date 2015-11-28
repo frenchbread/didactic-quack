@@ -19,8 +19,6 @@ Wrapper around [Telegram](https://telegram.org/) messenger API.
 
 ## Usage
 
-You might want to install [`node-cron`](https://github.com/ncb000gt/node-cron) package to check for new messages, for example every 5 seconds.
-
 #### In `app.js`:
 
 ```javascript

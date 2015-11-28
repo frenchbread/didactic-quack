@@ -49,7 +49,7 @@ $ node app.js
 Command implementations are stored in `Modules`. All modules should be registered in `modulesList.js` for bot to
 recognise them and referenced in `modules/index.js`.
  
-###### Default commands
+#### Default commands:
 
 Text this commands directly to you newly created bot.
 

@@ -22,20 +22,19 @@ You might want to install [`node-cron`](https://github.com/ncb000gt/node-cron) p
 #### In `app.js`:
 
 ```javascript
-var CronJob = require('cron').CronJob; // node-cron package is not included. Run "npm i cron" to install it.
 var DQ = require('didactic-quack');
        
 var dq = new DQ({
-    "parent": "your_telegram_id",
-    "host": "https://api.telegram.org/bot",
     "token": "your_telegram_bot_api_token"
 });
-   
-new CronJob('*/5 * * * * *', function() {
 
-    dq.getUpdates();
+setInterval(function () {
 
-}, null, true, 'America/Los_Angeles');
+    dq.getUpdates(function (err, res) {
+        console.log(res);
+    });
+
+}, 3000);
 
 ```
 

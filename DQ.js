@@ -22,7 +22,7 @@ var DQ = function (params) {
 
     this._parent = (typeof params.parent === 'undefined') ? null : params.parent;
 
-    this._recipient;
+    this._recipient = null;
 
     this._offset = 0;
 
@@ -30,7 +30,9 @@ var DQ = function (params) {
 
     this.sendMessageUrl = this._host + this._token + "/sendMessage";
 
-    this._moduleList = modulesList;
+    this._moduleList = (typeof params.moduleList === 'undefined') ? modulesList : params.moduleList;
+
+    this._modules = (typeof params.modules === 'undefined') ? modules : params.modules;
 
 };
 
@@ -99,13 +101,15 @@ DQ.prototype.getUpdates = function () {
     });
 };
 
+
+// Iterates though each message & call a callback with deployed module data
 DQ.prototype._eachMessage = function (messages, callback) {
 
     var self = this;
 
     _.each(messages, function (msg) {
 
-        self._recipient = msg.message.from.id; // (self._parent != null) ? self._parent : e.message.from.id;
+        self._recipient = msg.message.from.id;
         var text = msg.message.text;
 
 
@@ -113,15 +117,16 @@ DQ.prototype._eachMessage = function (messages, callback) {
 
             var moduleName = self._getCommandName(text);
 
-            callback(undefined, modules[moduleName](text));
+            callback(undefined, self._modules[moduleName](text));
         } else {
 
             // Call default module
-            callback(undefined, modules.default());
+            callback(undefined, self._modules.default());
         }
     });
 };
 
+// Parses string & checks if one contains a command listed in modules list
 DQ.prototype._hasCommand = function (text) {
 
     var modules = this._moduleList;
@@ -138,6 +143,7 @@ DQ.prototype._hasCommand = function (text) {
     return false;
 };
 
+// Same as above but returnes module name
 DQ.prototype._getCommandName = function (text) {
 
     var modules = this._moduleList;
@@ -154,12 +160,14 @@ DQ.prototype._getCommandName = function (text) {
     }
 };
 
+// Update offset
 DQ.prototype._updateOffset = function (messages) {
 
     this._offset = this._getHighestOffset(messages) + 1;
     logger.info("Updating offset..");
 };
 
+// Get highest offset value from an array of objects
 DQ.prototype._getHighestOffset = function (messages) {
 
     var arr = [];
@@ -172,69 +180,5 @@ DQ.prototype._getHighestOffset = function (messages) {
 
     return Math.max.apply(null, arr);
 };
-
-
-
-//// Updating offset
-//self._offset = getHighestOffset(messages) + 1;
-//
-//messages.forEach(function(e){
-//
-//    var to = (self._parent != null) ? self._parent : e.message.from.id;
-//
-//    var text = e.message.text;
-//
-//    return callback(text);
-//});
-
-//DQ.prototype.getUpdates = function (callback) {
-//
-//    var self = this;
-//
-//    request(self.getUpdatesUrl, function(err, response, body){
-//
-//        if (err) throw err;
-//
-//        var res = JSON.parse(body);
-//
-//        if (res.ok) {
-//
-//            var messages = res.result;
-//
-//            if (messages.length>0) {
-//
-//                // Updating offset
-//                self._offset = getHighestOffset(messages) + 1;
-//
-//                messages.forEach(function(e){
-//
-//                    var to = (self._parent != null) ? self._parent : e.message.from.id;
-//
-//                    var text = e.message.text;
-//
-//                    return callback(text);
-//                });
-//
-//            }else{
-//                return callback(null);
-//            }
-//        }
-//    });
-//
-//    // Helper functions
-//    function getHighestOffset(messages){
-//
-//        var arr = [];
-//
-//        messages.forEach(function(e){
-//
-//            arr.push(e.update_id);
-//        });
-//
-//        return Math.max.apply(null, arr);
-//    }
-//};
-//
-
 
 module.exports = DQ;

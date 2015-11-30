@@ -30,9 +30,7 @@ var dq = new DQ({
 
 setInterval(function () {
 
-    dq.getUpdates(function (err, res) {
-        console.log(res);
-    });
+    dq.getUpdates();
 
 }, 3000);
 

@@ -1,123 +1,185 @@
-var r = require('request');
-var async = require('async');
-var fs = require('fs');
-var path = require('path');
-var parseMessage = require('./lib/parseMessage');
+var request = require('request');
+var _ = require('underscore');
+var URL = require('url');
+var string = require('string');
+var logger = require('intel');
 
+var modulesList = require('./lib/modulesList');
+var modules = require('./lib/modules');
+
+
+// Class constructor
 var DQ = function (params) {
 
-    this.parent = params.parent;
-    this.host = params.host;
-    this.token = params.token;
+    this._token = params.token;
+
+    this._host = URL.format({
+        protocol: "https",
+        host: "api.telegram.org",
+        pathname: "bot"
+    });
+
+    this._parent = (typeof params.parent === 'undefined') ? null : params.parent;
+
+    this._recipient = null;
+
+    this._offset = 0;
+
+    this._getUpdatesUrl = this._host + this._token + "/getUpdates";
+
+    this._sendMessageUrl = this._host + this._token + "/sendMessage";
+
+    this._moduleList = (typeof params.moduleList === 'undefined') ? modulesList : params.moduleList;
+
+    this._modules = (typeof params.modules === 'undefined') ? modules : params.modules;
+
 };
 
+
+// Get request
+// returns callback with NEW MESSAGES list
+DQ.prototype._reqGet = function (callback) {
+
+    var self = this;
+
+    var url = this._getUpdatesUrl + "?offset=" + this._offset;
+
+    request(url, function (err, res, body) {
+
+        if (err) callback(err, null);
+
+        var bodyObj = JSON.parse(body);
+
+        if (bodyObj.ok) {
+
+            var messages = bodyObj.result;
+
+            if (messages.length > 0) {
+
+                self._updateOffset(messages);
+
+                callback(null, messages);
+
+            } else {
+
+                logger.info("No new messages..");
+
+                return callback(undefined, []);
+            }
+
+        } else return callback(new Error("Response looks wrong.."), undefined);
+
+    });
+};
+
+// Send message method
+DQ.prototype.sendMessage = function (to, text) {
+
+    var prefix = "?chat_id=" + to + "&text=" + text;
+
+    request(this._sendMessageUrl + prefix, function(err, response, body){
+        if (err) logger.error(err);
+
+        logger.info("Message send");
+    });
+};
+
+// Main method
+// get new messages, iterates through each message
 DQ.prototype.getUpdates = function () {
 
     var self = this;
 
-    var fileWithOffset = path.join(__dirname, 'config/offset.txt');
+    this._reqGet(function (err, messages) {
 
-    var nUrl = self.host + self.token + "/getUpdates";
+        if (err) callback(err, undefined);
 
-    async.waterfall([
+        self._eachMessage(messages, function (err, response) {
 
-        function (next) {
+            if (err) logger.error(err);
 
-            fs.readFile(fileWithOffset, 'utf8', function (err, data) {
-
-                if (err) throw err;
-
-                var offset = 0;
-
-                if (!data || data != parseInt(data, 10)) {
-
-                    fs.writeFile(fileWithOffset, offset, function (err) {
-                        if (err) throw err;
-                        console.log('Default offset is set.');
-                    });
-
-                }else offset = data;
-
-                next(null, offset);
-            });
-        },
-        function (offset, next) {
-
-            r(nUrl + "?offset="+offset, function(err, response, body){
-
-                if (err) throw err;
-
-                var res = JSON.parse(body);
-
-                if (res.ok) {
-
-                    var messages = res.result;
-
-                    if (messages.length>0) {
-
-                        updateOffset(messages);
-
-                        next(null, messages);
-                    }else{
-                        console.log("No new messages..");
-                    }
-                }
-            });
-        },
-        function (messages, next) {
-
-            messages.forEach(function(e){
-
-                // Sends message to the client (uncomment if bot goes public)
-                //var to = e.message.from.id;
-
-                // Sends message to bot "owner" (parent id)
-                var to = self.parent;
-                var text = e.message.text;
-
-                // parse messages
-                var responseMessage = parseMessage(text);
-
-                // Sends message.
-                self.sendMessage(to, responseMessage);
-            });
-        }
-    ]);
-
-    // Helper functions
-    function updateOffset(messages){
-
-        var offset = getHighestOffset(messages) + 1;
-
-        fs.writeFile(fileWithOffset, offset, function (err) {
-            if (err) throw err;
-            console.log('Offset updated.');
+            self.sendMessage(self._recipient, response);
         });
+    });
+};
+
+// Iterates though each message & call a callback with deployed module data
+DQ.prototype._eachMessage = function (messages, callback) {
+
+    var self = this;
+
+    _.each(messages, function (msg) {
+
+        self._recipient = msg.message.from.id;
+        var text = msg.message.text;
+
+
+        if (self._hasCommand(text)){
+
+            var moduleName = self._getCommandName(text);
+
+            callback(undefined, self._modules[moduleName](text));
+        } else {
+
+            // Call default module
+            callback(undefined, self._modules.default());
+        }
+    });
+};
+
+// Parses string & checks if one contains a command listed in modules list
+DQ.prototype._hasCommand = function (text) {
+
+    var modules = this._moduleList;
+
+    for (var key in modules) {
+
+        if (modules.hasOwnProperty(key)) {
+
+            if (string(text).contains(modules[key]))
+                return true;
+        }
     }
 
-    function getHighestOffset(obj){
+    return false;
+};
 
-        var arr = [];
+// Same as above but returnes module name
+DQ.prototype._getCommandName = function (text) {
 
-        obj.forEach(function(e){
+    var modules = this._moduleList;
 
-            arr.push(e.update_id);
-        });
+    for (var key in modules) {
 
-        return Math.max.apply(null, arr);
+        if (modules.hasOwnProperty(key)) {
+
+            if (string(text).contains(modules[key])){
+
+                return key;
+            }
+        }
     }
 };
 
-DQ.prototype.sendMessage = function (to, text) {
+// Update offset
+DQ.prototype._updateOffset = function (messages) {
 
-    var toPrefix = "?chat_id=" + to;
-    var messagePrefix = "&text=" + text;
+    this._offset = this._getHighestOffset(messages) + 1;
+    logger.info("Updating offset..");
+};
 
-    var nUrl = this.host + this.token + "/sendMessage" + toPrefix + messagePrefix;
+// Get highest offset value from an array of objects
+DQ.prototype._getHighestOffset = function (messages) {
 
-    r(nUrl, function(err, response, body){
-        if (err) throw err;
+    var arr = [];
+
+    _.map(messages, function (msg) {
+
+        arr.push(msg.update_id);
+
     });
+
+    return Math.max.apply(null, arr);
 };
 
 module.exports = DQ;

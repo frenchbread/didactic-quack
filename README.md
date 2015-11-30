@@ -19,25 +19,22 @@ Wrapper around [Telegram](https://telegram.org/) messenger API.
 
 ## Usage
 
-You might want to install [`node-cron`](https://github.com/ncb000gt/node-cron) package to check for new messages, for example every 5 seconds.
-
 #### In `app.js`:
 
 ```javascript
-var CronJob = require('cron').CronJob; // node-cron package is not included. Run "npm i cron" to install it.
 var DQ = require('didactic-quack');
        
 var dq = new DQ({
-    "parent": "your_telegram_id",
-    "host": "https://api.telegram.org/bot",
     "token": "your_telegram_bot_api_token"
 });
-   
-new CronJob('*/5 * * * * *', function() {
 
-    dq.getUpdates();
+setInterval(function () {
 
-}, null, true, 'America/Los_Angeles');
+    dq.getUpdates(function (err, res) {
+        console.log(res);
+    });
+
+}, 3000);
 
 ```
 
@@ -49,11 +46,16 @@ $ node app.js
 
 #### Commands:
 
+Command implementations are stored in `Modules`. All modules should be registered in `modulesList.js` for bot to
+recognise them and referenced in `modules/index.js`.
+ 
+#### Default commands:
+
 Text this commands directly to you newly created bot.
 
 * `/time` - returns current time.
 
-* `/log <project> | <hours> | <details>` - returns logged data.
+* `/log <project> | <hours> | <details>` - returns logged data. (Does not do more. Only parses data and returns in user-friendly way).
 
 `<project>` - `String`
 
@@ -63,9 +65,15 @@ Text this commands directly to you newly created bot.
 
 ## Changelog:
 
+`v0.3.0` - Refactored almost all. Added modules. Offset now stored in memory.
+
 `v0.2.2` - Fixed path to `offset.txt`.
 
 `v0.2.0` - Removed `Cron` & `Mongoose`. Code cleanup. Changed project structure.
+
+## ToDo:
+
+* Set up a web hook for a bot to receive new messages automatically. (Get rid of "manual" requests to the server).
 
 ## License
 

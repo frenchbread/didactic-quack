@@ -1,9 +1,12 @@
 var DQ = require('./');
 
 var dq = new DQ({
-    "parent": "your_telegram_id",
-    "host": "https://api.telegram.org/bot",
-    "token": "your_api_token"
+    token: "",
+    parent: ""
 });
 
-dq.getUpdates();
+setInterval(function () {
+
+    dq.getUpdates();
+
+}, 3000);

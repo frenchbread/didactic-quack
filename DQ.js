@@ -1,5 +1,7 @@
 'use strict';
 
+const util = require('util');
+
 const _ = require('underscore');
 const request = require('request');
 const URL = require('url');
@@ -8,7 +10,6 @@ const logger = require('intel');
 
 const modulesList = require('./lib/modulesList');
 const modules = require('./lib/modules');
-
 
 // Class constructor
 const DQ = function (params) {
@@ -75,7 +76,7 @@ const DQ = function (params) {
 
           if (err) logger.error(err);
 
-          logger.info("Message send");
+          logger.info("Message sent.");
       });
     }
 
@@ -85,18 +86,21 @@ const DQ = function (params) {
 
           if (err) cb(err);
 
-          this._eachMessage(messages, (err, response) => {
+          if (messages.length > 0) {
 
-              if (err) logger.error(err);
+            this._eachMessage(messages, (err, msgs) => {
 
-              this.sendMessage(this._recipient, response);
-          });
+                if (err) logger.error(err);
+
+                this.sendMessage(this._recipient, msgs);
+            });
+          }
       });
     }
 
-    this._eachMessage = (messages, cb) => {
+    this._eachMessage = (msgs, cb) => {
 
-      _.each(messages, (msg) => {
+      _.each(msgs, (msg) => {
 
           this._recipient = msg.message.from.id;
 
@@ -161,5 +165,7 @@ const DQ = function (params) {
       return Math.max.apply(null, arr);
     }
 };
+
+util.inherits(DQ, require('events').EventEmitter);
 
 module.exports = DQ;

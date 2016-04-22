@@ -1,4 +1,4 @@
 .idea/
-config/conf.json
+config/conf.js
 node_modules/
 npm-debug.log

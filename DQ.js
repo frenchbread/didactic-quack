@@ -15,30 +15,46 @@ const modules = require('./lib/modules');
 const DQ = function (params) {
 
     this._token = params.token;
-
     this._host = URL.format({
         protocol: "https",
         host: "api.telegram.org",
         pathname: "bot"
     });
-
     this._parent = (typeof params.parent === 'undefined') ? null : params.parent;
-
     this._recipient = null;
-
     this._offset = 0;
-
-    this._getUpdatesUrl = this._host + this._token + "/getUpdates";
-
+    this._httpGetUpdatesUrl = this._host + this._token + "/getUpdates";
     this._sendMessageUrl = this._host + this._token + "/sendMessage";
-
     this._moduleList = (typeof params.moduleList === 'undefined') ? modulesList : params.moduleList;
-
     this._modules = (typeof params.modules === 'undefined') ? modules : params.modules;
 
-    this._reqGet = (cb) => {
+    this.listen = (cb) => {
 
-      const url = this._getUpdatesUrl + "?offset=" + this._offset;
+      setInterval(() => {
+
+        this._getUpdates((err) => {
+          if (err) cb(er);
+        });
+
+      }, 3000);
+    }
+
+    this.send = (data, cb) => {
+
+      const to = data.to;
+      const text = data.text;
+
+      const url = this._sendMessageUrl + "?chat_id=" + to + "&text=" + text;
+
+      request(url, (err, response, body) => {
+
+          if (err) cb(err);
+      });
+    }
+
+    this._httpGet = (cb) => {
+
+      const url = this._httpGetUpdatesUrl + "?offset=" + this._offset;
 
       request(url, (err, res, body) => {
 
@@ -60,41 +76,26 @@ const DQ = function (params) {
 
                   logger.info("No new messages..");
 
-                  return cb(undefined, []);
+                  return cb(null);
               }
 
-          } else return cb(new Error("Response looks wrong.."), undefined);
+          } else return cb("Response looks wrong..");
 
       });
     }
 
-    this.sendMessage = (to, text) => {
+    this._getUpdates = (cb) => {
 
-      const prefix = "?chat_id=" + to + "&text=" + text;
-
-      request(this._sendMessageUrl + prefix, (err, response, body) => {
-
-          if (err) logger.error(err);
-
-          logger.info("Message sent.");
-      });
-    }
-
-    this.getUpdates = (cb) => {
-
-      this._reqGet((err, messages) => {
+      this._httpGet((err, messages) => {
 
           if (err) cb(err);
 
-          if (messages.length > 0) {
+          this._eachMessage(messages, (err, message) => {
 
-            this._eachMessage(messages, (err, msgs) => {
+              if (err) logger.error(err);
 
-                if (err) logger.error(err);
-
-                this.sendMessage(this._recipient, msgs);
-            });
-          }
+              this.emit('message', message);
+          });
       });
     }
 
@@ -102,19 +103,27 @@ const DQ = function (params) {
 
       _.each(msgs, (msg) => {
 
-          this._recipient = msg.message.from.id;
-
+          const to = this._recipient = msg.message.from.id;
           const text = msg.message.text;
+
+          let obj = {
+            to,
+            text
+          }
 
           if (this._hasCommand(text)){
 
               const moduleName = this._getCommandName(text);
 
-              cb(null, this._modules[moduleName](text));
+              obj.module = this._modules[moduleName](text);
+
+              cb(null, obj);
           } else {
 
+              obj.module = this._modules.default();
+
               // Call default module
-              cb(null, this._modules.default());
+              cb(null, obj);
           }
       });
     }

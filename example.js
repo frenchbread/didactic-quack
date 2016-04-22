@@ -7,21 +7,13 @@ const dq = new DQ({
     parent: config.parent
 });
 
-// setInterval(() => {
-//
-//     dq.getUpdates((err) => {
-//       if (err) console.log(err);
-//     });
-//
-// }, 3000);
-//
-// dq.on('message', (details) => {
-//   console.log(details.text + " new messages");
-// })
-
 dq.on('message', (message) => {
 
-  dq.send({ to: message.to, text: message.module });
+  const to = message.to;
+  const text = message.text;
+  const moduleResponse = dq.initModule(text);
+
+  dq.send({ to, text: moduleResponse });
 })
 
 

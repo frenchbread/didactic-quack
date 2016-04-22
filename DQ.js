@@ -1,15 +1,17 @@
-var request = require('request');
-var _ = require('underscore');
-var URL = require('url');
-var string = require('string');
-var logger = require('intel');
+'use strict';
 
-var modulesList = require('./lib/modulesList');
-var modules = require('./lib/modules');
+const _ = require('underscore');
+const request = require('request');
+const URL = require('url');
+const string = require('string');
+const logger = require('intel');
+
+const modulesList = require('./lib/modulesList');
+const modules = require('./lib/modules');
 
 
 // Class constructor
-var DQ = function (params) {
+const DQ = function (params) {
 
     this._token = params.token;
 
@@ -33,153 +35,131 @@ var DQ = function (params) {
 
     this._modules = (typeof params.modules === 'undefined') ? modules : params.modules;
 
-};
+    this._reqGet = (cb) => {
 
+      const url = this._getUpdatesUrl + "?offset=" + this._offset;
 
-// Get request
-// returns callback with NEW MESSAGES list
-DQ.prototype._reqGet = function (callback) {
+      request(url, (err, res, body) => {
 
-    var self = this;
+          if (err) cb(err);
 
-    var url = this._getUpdatesUrl + "?offset=" + this._offset;
+          const bodyObj = JSON.parse(body);
 
-    request(url, function (err, res, body) {
+          if (bodyObj.ok) {
 
-        if (err) callback(err, null);
+              const messages = bodyObj.result;
 
-        var bodyObj = JSON.parse(body);
+              if (messages.length > 0) {
 
-        if (bodyObj.ok) {
+                  this._updateOffset(messages);
 
-            var messages = bodyObj.result;
+                  cb(null, messages);
 
-            if (messages.length > 0) {
+              } else {
 
-                self._updateOffset(messages);
+                  logger.info("No new messages..");
 
-                callback(null, messages);
+                  return cb(undefined, []);
+              }
 
-            } else {
+          } else return cb(new Error("Response looks wrong.."), undefined);
 
-                logger.info("No new messages..");
-
-                return callback(undefined, []);
-            }
-
-        } else return callback(new Error("Response looks wrong.."), undefined);
-
-    });
-};
-
-// Send message method
-DQ.prototype.sendMessage = function (to, text) {
-
-    var prefix = "?chat_id=" + to + "&text=" + text;
-
-    request(this._sendMessageUrl + prefix, function(err, response, body){
-        if (err) logger.error(err);
-
-        logger.info("Message send");
-    });
-};
-
-// Main method
-// get new messages, iterates through each message
-DQ.prototype.getUpdates = function () {
-
-    var self = this;
-
-    this._reqGet(function (err, messages) {
-
-        if (err) callback(err, undefined);
-
-        self._eachMessage(messages, function (err, response) {
-
-            if (err) logger.error(err);
-
-            self.sendMessage(self._recipient, response);
-        });
-    });
-};
-
-// Iterates though each message & call a callback with deployed module data
-DQ.prototype._eachMessage = function (messages, callback) {
-
-    var self = this;
-
-    _.each(messages, function (msg) {
-
-        self._recipient = msg.message.from.id;
-        var text = msg.message.text;
-
-
-        if (self._hasCommand(text)){
-
-            var moduleName = self._getCommandName(text);
-
-            callback(undefined, self._modules[moduleName](text));
-        } else {
-
-            // Call default module
-            callback(undefined, self._modules.default());
-        }
-    });
-};
-
-// Parses string & checks if one contains a command listed in modules list
-DQ.prototype._hasCommand = function (text) {
-
-    var modules = this._moduleList;
-
-    for (var key in modules) {
-
-        if (modules.hasOwnProperty(key)) {
-
-            if (string(text).contains(modules[key]))
-                return true;
-        }
+      });
     }
 
-    return false;
-};
+    this.sendMessage = (to, text) => {
 
-// Same as above but returnes module name
-DQ.prototype._getCommandName = function (text) {
+      const prefix = "?chat_id=" + to + "&text=" + text;
 
-    var modules = this._moduleList;
+      request(this._sendMessageUrl + prefix, (err, response, body) => {
 
-    for (var key in modules) {
+          if (err) logger.error(err);
 
-        if (modules.hasOwnProperty(key)) {
-
-            if (string(text).contains(modules[key])){
-
-                return key;
-            }
-        }
+          logger.info("Message send");
+      });
     }
-};
 
-// Update offset
-DQ.prototype._updateOffset = function (messages) {
+    this.getUpdates = (cb) => {
 
-    this._offset = this._getHighestOffset(messages) + 1;
-    logger.info("Updating offset..");
-};
+      this._reqGet((err, messages) => {
 
-// Get highest offset value from an array of objects
-DQ.prototype._getHighestOffset = function (messages) {
+          if (err) cb(err);
 
-    var arr = [];
+          this._eachMessage(messages, (err, response) => {
 
-    _.map(messages, function (msg) {
+              if (err) logger.error(err);
 
-        arr.push(msg.update_id);
+              this.sendMessage(this._recipient, response);
+          });
+      });
+    }
 
-    });
+    this._eachMessage = (messages, cb) => {
 
-    return Math.max.apply(null, arr);
+      _.each(messages, (msg) => {
+
+          this._recipient = msg.message.from.id;
+
+          const text = msg.message.text;
+
+          if (this._hasCommand(text)){
+
+              const moduleName = this._getCommandName(text);
+
+              cb(null, this._modules[moduleName](text));
+          } else {
+
+              // Call default module
+              cb(null, this._modules.default());
+          }
+      });
+    }
+
+    this._hasCommand = (text) => {
+
+      const modules = this._moduleList;
+
+      for (let key in modules) {
+
+          if (modules.hasOwnProperty(key)) {
+
+              if (string(text).contains(modules[key])) return true;
+          }
+      }
+
+      return false;
+    }
+
+    this._getCommandName = (text) => {
+
+      const modules = this._moduleList;
+
+      for (let key in modules) {
+
+          if (modules.hasOwnProperty(key)) {
+
+              if (string(text).contains(modules[key])) return key;
+          }
+      }
+    }
+
+    this._updateOffset = (messages) => {
+
+      this._offset = this._getHighestOffset(messages) + 1;
+      logger.info("Updating offset..");
+    }
+
+    this._getHighestOffset = (messages) => {
+
+      let arr = [];
+
+      _.map(messages, (msg) => {
+
+          arr.push(msg.update_id);
+      });
+
+      return Math.max.apply(null, arr);
+    }
 };
 
 module.exports = DQ;

@@ -52,6 +52,17 @@ const DQ = function (params) {
       });
     }
 
+    this.initModule = (text) => {
+
+      if (this._hasCommand(text)){
+
+          const moduleName = this._getCommandName(text);
+
+          return this._modules[moduleName](text);
+
+      } else return this._modules.default();
+    }
+
     this._httpGet = (cb) => {
 
       const url = this._httpGetUpdatesUrl + "?offset=" + this._offset;
@@ -106,25 +117,10 @@ const DQ = function (params) {
           const to = this._recipient = msg.message.from.id;
           const text = msg.message.text;
 
-          let obj = {
+          cb(null, {
             to,
             text
-          }
-
-          if (this._hasCommand(text)){
-
-              const moduleName = this._getCommandName(text);
-
-              obj.module = this._modules[moduleName](text);
-
-              cb(null, obj);
-          } else {
-
-              obj.module = this._modules.default();
-
-              // Call default module
-              cb(null, obj);
-          }
+          });
       });
     }
 

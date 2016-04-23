@@ -49,6 +49,8 @@ const DQ = function (params) {
       request(url, (err, response, body) => {
 
           if (err) cb(err);
+
+          console.log("Message sent.")
       });
     }
 

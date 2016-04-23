@@ -1,5 +1,7 @@
 'use strict';
 
+const util = require('util');
+
 const _ = require('underscore');
 const request = require('request');
 const URL = require('url');
@@ -9,35 +11,63 @@ const logger = require('intel');
 const modulesList = require('./lib/modulesList');
 const modules = require('./lib/modules');
 
-
 // Class constructor
 const DQ = function (params) {
 
     this._token = params.token;
-
     this._host = URL.format({
         protocol: "https",
         host: "api.telegram.org",
         pathname: "bot"
     });
-
     this._parent = (typeof params.parent === 'undefined') ? null : params.parent;
-
     this._recipient = null;
-
     this._offset = 0;
-
-    this._getUpdatesUrl = this._host + this._token + "/getUpdates";
-
+    this._httpGetUpdatesUrl = this._host + this._token + "/getUpdates";
     this._sendMessageUrl = this._host + this._token + "/sendMessage";
-
     this._moduleList = (typeof params.moduleList === 'undefined') ? modulesList : params.moduleList;
-
     this._modules = (typeof params.modules === 'undefined') ? modules : params.modules;
 
-    this._reqGet = (cb) => {
+    this.listen = (cb) => {
 
-      const url = this._getUpdatesUrl + "?offset=" + this._offset;
+      setInterval(() => {
+
+        this._getUpdates((err) => {
+          if (err) cb(er);
+        });
+
+      }, 3000);
+    }
+
+    this.send = (data, cb) => {
+
+      const to = data.to;
+      const text = data.text;
+
+      const url = this._sendMessageUrl + "?chat_id=" + to + "&text=" + text;
+
+      request(url, (err, response, body) => {
+
+          if (err) cb(err);
+
+          console.log("Message sent.")
+      });
+    }
+
+    this.initModule = (text) => {
+
+      if (this._hasCommand(text)){
+
+          const moduleName = this._getCommandName(text);
+
+          return this._modules[moduleName](text);
+
+      } else return this._modules.default();
+    }
+
+    this._httpGet = (cb) => {
+
+      const url = this._httpGetUpdatesUrl + "?offset=" + this._offset;
 
       request(url, (err, res, body) => {
 
@@ -59,59 +89,40 @@ const DQ = function (params) {
 
                   logger.info("No new messages..");
 
-                  return cb(undefined, []);
+                  return cb(null);
               }
 
-          } else return cb(new Error("Response looks wrong.."), undefined);
+          } else return cb("Response looks wrong..");
 
       });
     }
 
-    this.sendMessage = (to, text) => {
+    this._getUpdates = (cb) => {
 
-      const prefix = "?chat_id=" + to + "&text=" + text;
-
-      request(this._sendMessageUrl + prefix, (err, response, body) => {
-
-          if (err) logger.error(err);
-
-          logger.info("Message send");
-      });
-    }
-
-    this.getUpdates = (cb) => {
-
-      this._reqGet((err, messages) => {
+      this._httpGet((err, messages) => {
 
           if (err) cb(err);
 
-          this._eachMessage(messages, (err, response) => {
+          this._eachMessage(messages, (err, message) => {
 
               if (err) logger.error(err);
 
-              this.sendMessage(this._recipient, response);
+              this.emit('message', message);
           });
       });
     }
 
-    this._eachMessage = (messages, cb) => {
+    this._eachMessage = (msgs, cb) => {
 
-      _.each(messages, (msg) => {
+      _.each(msgs, (msg) => {
 
-          this._recipient = msg.message.from.id;
-
+          const to = this._recipient = msg.message.from.id;
           const text = msg.message.text;
 
-          if (this._hasCommand(text)){
-
-              const moduleName = this._getCommandName(text);
-
-              cb(null, this._modules[moduleName](text));
-          } else {
-
-              // Call default module
-              cb(null, this._modules.default());
-          }
+          cb(null, {
+            to,
+            text
+          });
       });
     }
 
@@ -161,5 +172,7 @@ const DQ = function (params) {
       return Math.max.apply(null, arr);
     }
 };
+
+util.inherits(DQ, require('events').EventEmitter);
 
 module.exports = DQ;
